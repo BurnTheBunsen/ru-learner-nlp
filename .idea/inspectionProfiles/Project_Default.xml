@@ -1,0 +1,23 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="INFORMATION" enabled_by_default="true" editorAttributes="INFORMATION_ATTRIBUTES">
+      <option name="ignoredPackages">
+        <list>
+          <option value="matplotlib" />
+          <option value="numpy" />
+          <option value="pandas" />
+          <option value="Requests" />
+          <option value="sentence_transformers" />
+          <option value="spacy" />
+          <option value="tqdm" />
+          <option value="transformers" />
+          <option value="accelerate" />
+          <option value="bitsandbytes" />
+          <option value="jupyter" />
+          <option value="wheel" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

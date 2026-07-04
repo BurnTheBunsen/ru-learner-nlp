@@ -1,0 +1,29 @@
+# Virtual Environment
+.venv/
+
+# IDE Settings (PyCharm)
+.idea/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Project Data & Corpus
+data/
+*.csv
+*.tsv
+*.txt
+
+# Models & Binaries
+models/
+*.udpipe
+*.exe
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
