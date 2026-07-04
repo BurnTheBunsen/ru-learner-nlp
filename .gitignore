@@ -18,6 +18,7 @@ data/
 *.csv
 *.tsv
 *.txt
+!requirements.txt
 
 # Models & Binaries
 models/
