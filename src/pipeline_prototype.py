@@ -1,4 +1,6 @@
 import sys
+import time
+import tracemalloc
 import logging
 from pathlib import Path
 import pandas as pd
@@ -18,6 +20,10 @@ MOCK_DIR = DATA_DIR / "mock"
 MODEL_PATH = BASE_DIR / "models" / "russian-syntagrus-ud-2.5-191206.udpipe"
 
 def main():
+    # Profiler start to check for processing time and memory usage
+    start_time = time.perf_counter()
+    tracemalloc.start()
+
     # Make sure the subsequent directories actually exist
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
@@ -113,6 +119,22 @@ def main():
 
     logger.info(f"Pipeline complete. Saved {len(df)} essays to {metadata_path}")
     logger.info(f"Exploded {len(df_tokens)} total tokens to {tokens_path}")
+
+    # Profiler stop and log the metrics
+    current_mem, peak_mem = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    end_time = time.perf_counter()
+
+    elapsed_time = end_time - start_time
+    peak_mb = peak_mem / (1024*1024)
+    avg_time_per_essay = elapsed_time / len(df) if len(df) > 0 else 0
+    logger.info("\n=====================================")
+    logger.info("        PERFORMANCE PROFILER         ")
+    logger.info("=====================================")
+    logger.info(f"Total Execution Time  : {elapsed_time:.2f} seconds")
+    logger.info(f"Avg Time per Essay    : {avg_time_per_essay:.3f} seconds")
+    logger.info(f"Peak Memory Usage     : {peak_mb:.2f} MB")
+    logger.info("=====================================\n")
 
 if __name__ == "__main__":
     main()
