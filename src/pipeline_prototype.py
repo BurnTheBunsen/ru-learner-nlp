@@ -128,13 +128,14 @@ def main():
     elapsed_time = end_time - start_time
     peak_mb = peak_mem / (1024*1024)
     avg_time_per_essay = elapsed_time / len(df) if len(df) > 0 else 0
-    logger.info("\n=====================================")
-    logger.info("        PERFORMANCE PROFILER         ")
-    logger.info("=====================================")
-    logger.info(f"Total Execution Time  : {elapsed_time:.2f} seconds")
-    logger.info(f"Avg Time per Essay    : {avg_time_per_essay:.3f} seconds")
-    logger.info(f"Peak Memory Usage     : {peak_mb:.2f} MB")
-    logger.info("=====================================\n")
+    logger.info(f"""
+    =====================================
+            PERFORMANCE PROFILER         
+    =====================================
+    Total Execution Time  : {elapsed_time:.2f} seconds
+    Avg Time per Essay    : {avg_time_per_essay:.3f} seconds
+    Peak Memory Usage     : {peak_mb:.2f} MB
+    =====================================""")
 
 if __name__ == "__main__":
     main()
