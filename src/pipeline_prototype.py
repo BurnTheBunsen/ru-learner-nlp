@@ -15,7 +15,7 @@ DATA_DIR = BASE_DIR / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 MOCK_DIR = DATA_DIR / "mock"
-MODEL_PATH = DATA_DIR / "models" / "russian-Syntagrus-ud-2.5-191206.udpipe"
+MODEL_PATH = BASE_DIR / "models" / "russian-syntagrus-ud-2.5-191206.udpipe"
 
 def main():
     # Make sure the subsequent directories actually exist
@@ -50,7 +50,7 @@ def main():
             logger.info(f"Wrote {active_path}")
 
     logger.info("Loading mock data into memory...")
-    df = pd.read_csv(active_path)
+    df = pd.read_csv(active_path, encoding="utf-8")
     logger.info(f"Data loaded from {active_path}")
     # Ufal.udpipe engine initialization
     if not MODEL_PATH.exists():
@@ -62,27 +62,57 @@ def main():
 
     if not model:
         logger.critical(f"UDPipe failed to instantiate model {MODEL_PATH}.")
+        raise RuntimeError(f"UDPipe failed to instantiate model. Halting pipeline.")
 
     pipeline = Pipeline(model, "tokenize",Pipeline.DEFAULT, Pipeline.DEFAULT, "conllu")
     error = ProcessingError()
 
     # Pipeline loop
-    conllu_outputs = []
-    token_count = []
+    token_counts = []
+    parsed_tokens_list = []  # This will hold every single word from every single essay
+
     for idx, row in df.iterrows():
-        text = str(row['raw_text'])
-        pid = row['participant_id']
+        text = str(row["raw_text"])
+        pid = row["participant_id"]
 
         processed_text = pipeline.process(text, error)
-        # In case C++ engine crashes on an essay
+
         if error.occurred():
-            logger.error(f"Processing failed for essay {pid}: {error.message}")
-        conllu_outputs.append(None)
-        token_count.append(0)
-        continue
+            logger.error(f"UDPipe failed to parse essay {pid}: {error.message}")
+            token_counts.append(0)
+            continue
 
-        conllu_output.append(processed_text)
+        # Split the CoNLL-U output into individual lines
+        lines = processed_text.split("\n")
 
-        # token count extraction
-        tokens = [line for line in processed_text.split("\n") if line and not line.startswith("#")]
-        token_count.append(len(tokens))
+        # Filter out empty lines and metadata comments
+        valid_token_lines = [line for line in lines if line and not line.startswith("#")]
+        token_counts.append(len(valid_token_lines))
+
+        # The nested loop: Process each word and attach the student's ID
+        for line in valid_token_lines:
+            fields = line.split("\t")  # CoNLL-U format is always tab-separated
+            row_data = [pid] + fields  # Combine the participant ID with the 10 UDPipe columns
+            parsed_tokens_list.append(row_data)
+
+    # Update the original metadata dataframe
+    df["token_count"] = token_counts
+    # Notice we dropped `conllu_outputs` entirely — we don't need the giant string anymore!
+
+    # Build the brand new token-level dataframe
+    token_columns = ["participant_id", "ID", "FORM", "LEMMA", "UPOS", "XPOS", "FEATS", "HEAD", "DEPREL", "DEPS", "MISC"]
+    df_tokens = pd.DataFrame(parsed_tokens_list, columns=token_columns)
+
+    # SAVE OUTPUT (RELATIONAL ARCHITECTURE)
+
+    metadata_path = PROCESSED_DIR / "corpus_metadata.csv"
+    tokens_path = PROCESSED_DIR / "corpus_tokens.csv"
+
+    df.to_csv(metadata_path, index=False, encoding="utf-8")
+    df_tokens.to_csv(tokens_path, index=False, encoding="utf-8")
+
+    logger.info(f"Pipeline complete. Saved {len(df)} essays to {metadata_path}")
+    logger.info(f"Exploded {len(df_tokens)} total tokens to {tokens_path}")
+
+if __name__ == "__main__":
+    main()
