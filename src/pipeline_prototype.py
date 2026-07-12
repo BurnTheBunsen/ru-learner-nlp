@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 import pandas as pd
 from ufal.udpipe import Model, Pipeline, ProcessingError
-import pymystem3 as mystem
+from pymystem3 import Mystem
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.INFO,
                     handlers=[logging.StreamHandler(sys.stdout)])
@@ -58,6 +58,17 @@ def main():
     logger.info("Loading mock data into memory...")
     df = pd.read_csv(active_path, encoding="utf-8")
     logger.info(f"Data loaded from {active_path}")
+
+    # Input regex cleaning
+    logger.info("Sanitizing the raw input text...")
+    df["raw_text"] = (
+        df["raw_text"]
+        .str.replace(r'[\xa0\t\n\r]', " ", regex=True)
+        .str.repalce(r'\.{2,}', "...", regex=True)
+        .str.replace(r' +', ' ', regex=True)
+        .str.strip())
+    logger.info("Text sanitization complete!")
+
     # Ufal.udpipe engine initialization
     if not MODEL_PATH.exists():
         logger.critical(f"Model does not exist in {MODEL_PATH}.")
@@ -72,6 +83,7 @@ def main():
 
     pipeline = Pipeline(model, "tokenize",Pipeline.DEFAULT, Pipeline.DEFAULT, "conllu")
     error = ProcessingError()
+
 
     # Pipeline loop
     token_counts = []
