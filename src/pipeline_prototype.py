@@ -115,7 +115,6 @@ def main():
 
     # Update the original metadata dataframe
     df["token_count"] = token_counts
-    # Notice we dropped `conllu_outputs` entirely — we don't need the giant string anymore!
 
     # Build the brand new token-level dataframe
     token_columns = ["participant_id", "ID", "FORM", "LEMMA", "UPOS", "XPOS", "FEATS", "HEAD", "DEPREL", "DEPS", "MISC"]
