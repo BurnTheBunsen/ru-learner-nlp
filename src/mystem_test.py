@@ -3,12 +3,10 @@ import json
 
 # Instantiate the engine
 m = Mystem()
-
-# A sentence with a deliberate learner error ("собаке" instead of "собаку")
-text = "Я вижу красивая собаке"
+text = "Я вижу красивая собаке."
 
 # Run the analyzer
 result = m.analyze(text)
 
-# Print it nicely so you can study the dictionary structure
+# Mystem.analyze() output structure check
 print(json.dumps(result, ensure_ascii=False, indent=4))

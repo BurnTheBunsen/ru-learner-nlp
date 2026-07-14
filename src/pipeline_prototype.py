@@ -6,6 +6,8 @@ from pathlib import Path
 import pandas as pd
 from ufal.udpipe import Model, Pipeline, ProcessingError
 from pymystem3 import Mystem
+
+# Setting up logging so all the processes, errors and crashes are logged and accounted for
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.INFO,
                     handlers=[logging.StreamHandler(sys.stdout)])
@@ -84,6 +86,8 @@ def main():
     pipeline = Pipeline(model, "tokenize",Pipeline.DEFAULT, Pipeline.DEFAULT, "conllu")
     error = ProcessingError()
 
+    # Mystem engine instantiation before the loop, same as UDPipe
+    ms_engine = Mystem()
 
     # Pipeline loop
     token_counts = []
@@ -112,6 +116,21 @@ def main():
             fields = line.split("\t")  # CoNLL-U format is always tab-separated
             row_data = [pid] + fields  # Combine the participant ID with the 10 UDPipe columns
             parsed_tokens_list.append(row_data)
+
+        # Passing the raw text list which was extracted from our dataset into mystem
+        ms_jsonresult = ms_engine.analyze(text)
+
+        # now we need to write a loop for mystem too to extract all the info and tags that it provides
+        clean_ms_tokens = []
+        for item in ms_jsonresult:
+            if "analysis" in item and len(item["analysis"]) > 0:
+                clean_tokens = {
+                    "text": item.get("text", ""),
+                    "lex": item["analysis"][0].get("lex", ""),
+                    "wt": item["analysis"][0].get("wt", ""),
+                    "gr": item["analysis"][0].get("gr", "")
+                }
+                clean_ms_tokens.append(clean_tokens)
 
     # Update the original metadata dataframe
     df["token_count"] = token_counts
