@@ -125,10 +125,10 @@ def main():
         for item in ms_jsonresult:
             if "analysis" in item and len(item["analysis"]) > 0:
                 clean_tokens = {
-                    "text": item.get("text", ""),
-                    "lex": item["analysis"][0].get("lex", ""),
-                    "wt": item["analysis"][0].get("wt", ""),
-                    "gr": item["analysis"][0].get("gr", "")
+                    "ms_text": item.get("text", ""),
+                    "ms_lex": item["analysis"][0].get("lex", ""),
+                    "ms_wt": item["analysis"][0].get("wt", ""),
+                    "ms_gr": item ["analysis"][0].get("gr", ""),
                 }
                 clean_ms_tokens.append(clean_tokens)
 
@@ -136,7 +136,7 @@ def main():
     df["token_count"] = token_counts
 
     # Build the brand new token-level dataframe
-    token_columns = ["participant_id", "ID", "FORM", "LEMMA", "UPOS", "XPOS", "FEATS", "HEAD", "DEPREL", "DEPS", "MISC"]
+    token_columns = ["participant_id", "UD_ID", "UD_FORM", "UD_LEMMA", "UD_UPOS", "UD_XPOS", "UD_FEATS", "UD_HEAD", "UD_DEPREL", "UD_DEPS", "UD_MISC"]
     df_tokens = pd.DataFrame(parsed_tokens_list, columns=token_columns)
 
     # SAVE OUTPUT (RELATIONAL ARCHITECTURE)
