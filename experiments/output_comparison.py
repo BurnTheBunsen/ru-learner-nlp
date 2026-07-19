@@ -1,9 +1,38 @@
 from pathlib import Path
 import json
+from string import punctuation
 from ufal.udpipe import Model, Pipeline, ProcessingError
 from pymystem3 import Mystem
+import argparse
+import string
 base_path = Path(__file__).resolve().parent.parent
 model_path = base_path / "models" / "russian-syntagrus-ud-2.5-191206.udpipe"
+
+def get_test_string():
+    """Getting the test string via argparse."""
+    parser = argparse.ArgumentParser(
+        description="Stress test UDPipe vs Mystem tokenization on edgecases."
+    )
+    parser.add_argument(
+        "--test",
+        type=int,
+        choices=[1, 2, 3],
+        default=1,
+        help=f"""The test string to use.
+        1. Standard Traps (Initials, Spacing, Clusters)
+        2. Numerical Data (Decimals, Suffixes)
+        3. Digital Syntax (Emails, Slashes)""",
+    )
+    args = parser.parse_args()
+    if args.test == 1:
+        print("Running Test 1: Standard Traps...")
+        return f"Из-за дождя А.С. Пушкин не пошел в МГУ... Он кто-то, кто говорит по-русски,но делает ошибки?!"
+    elif args.test == 2:
+        print("Running Test 2: Numerical Data...")
+        return f"В 2025-м году 99,9% студентов сдали экзамен на 5+-!"
+    elif args.test == 3:
+        print("Running Test 3: Digital Syntax...")
+        return f"Студент/ка отправил(а) файл на e-mail: ivan_99@mail.ru!"
 
 def main():
     """
@@ -14,21 +43,27 @@ def main():
     :return:
     Token number for each of them so that we can check for mismatches in tokenization.
     """
-    test_text = f"Из-за дождя А.С. Пушкин не пошел в МГУ... Он кто-то, кто говорит по-русски,но делает ошибки?!"
+    test_text = get_test_string()
+
     # udpipe and mystem instantiations
     model = Model.load(str(model_path))
     udpipeline = Pipeline(model, "tokenize", Pipeline.DEFAULT, Pipeline.DEFAULT, "conllu")
     error = ProcessingError()
 
-    mystem = Mystem()
+    # Strip all punctuations EXCEPT hyphens
+    punctuation_to_strip = string.punctuation.replace("-", "")
 
+    mystem = Mystem()
     # processing
     mystem_result = mystem.analyze(test_text)
     # mystem_sanitized = json.dumps(mystem_result, ensure_ascii=False, indent=4)
     clean_ms_tokens = []
     for item in mystem_result:
-        if "analysis" in item and len(item["analysis"]) > 0:
-            clean_ms_tokens.append(item.get("text", ""))
+        ms_raw_words = item.get("text", '').strip()
+        ms_cleaned_words = ms_raw_words.strip(punctuation_to_strip)
+
+        if ms_cleaned_words:
+            clean_ms_tokens.append(ms_cleaned_words)
 
     udpipe_result = udpipeline.process(test_text, error)
     clean_ud_tokens = []
@@ -36,7 +71,13 @@ def main():
         if line.strip() == '' or line.startswith('#'):
             continue
         columns = line.split("\t")
-        clean_ud_tokens.append(columns[1])
+        ud_raw_words = columns[1]
+
+        # Strip leading/trailing punctuation (keeps internal punctuations like 99,9)
+        cleaned_words = ud_raw_words.strip(punctuation_to_strip)
+
+        if cleaned_words:
+            clean_ud_tokens.append(cleaned_words)
 
     print(f"""
     UDPipe tokens: {clean_ud_tokens}
