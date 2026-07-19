@@ -66,7 +66,7 @@ def main():
     df["raw_text"] = (
         df["raw_text"]
         .str.replace(r'[\xa0\t\n\r]', " ", regex=True)
-        .str.repalce(r'\.{2,}', "...", regex=True)
+        .str.replace(r'\.{2,}', "...", regex=True)
         .str.replace(r' +', ' ', regex=True)
         .str.strip())
     logger.info("Text sanitization complete!")
@@ -118,11 +118,11 @@ def main():
             parsed_tokens_list.append(row_data)
 
         # Passing the raw text list which was extracted from our dataset into mystem
-        ms_jsonresult = ms_engine.analyze(text)
+        ms_result = ms_engine.analyze(text)
 
         # now we need to write a loop for mystem too to extract all the info and tags that it provides
         clean_ms_tokens = []
-        for item in ms_jsonresult:
+        for item in ms_result:
             if "analysis" in item and len(item["analysis"]) > 0:
                 clean_tokens = {
                     "ms_text": item.get("text", ""),
