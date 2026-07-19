@@ -28,3 +28,6 @@ models/
 # OS Generated Files
 .DS_Store
 Thumbs.db
+
+# Scratch file
+*scratch.py
