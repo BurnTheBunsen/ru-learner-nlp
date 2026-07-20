@@ -5,6 +5,7 @@ from ufal.udpipe import Model, Pipeline, ProcessingError
 from pymystem3 import Mystem
 import argparse
 import string
+import re
 base_path = Path(__file__).resolve().parent.parent
 model_path = base_path / "models" / "russian-syntagrus-ud-2.5-191206.udpipe"
 
@@ -34,6 +35,16 @@ def get_test_string():
         print("Running Test 3: Digital Syntax...")
         return f"Студент/ка отправил(а) файл на e-mail: ivan_99@mail.ru!"
 
+def pre_process_text(raw_text):
+    """Sanitizes text by replacing emails and URLs with safe placeholder words."""
+    # Replace emails with the word "EMAIL"
+    clean_text = re.sub(r'\S+@\S+\.\S+', 'EMAIL', raw_text)
+
+    # Replace web links with the word "URL"
+    clean_text = re.sub(r'http[s]?://\S+|www\.\S+', 'URL', clean_text)
+
+    return clean_text
+
 def main():
     """
     The entire function of this script is to feed the most complicated edge cases into both of the
@@ -44,6 +55,7 @@ def main():
     Token number for each of them so that we can check for mismatches in tokenization.
     """
     test_text = get_test_string()
+    test_text = pre_process_text(test_text)
 
     # udpipe and mystem instantiations
     model = Model.load(str(model_path))
