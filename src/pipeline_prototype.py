@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 from ufal.udpipe import Model, Pipeline, ProcessingError
 from pymystem3 import Mystem
+import re
 
 # Setting up logging so all the processes, errors and crashes are logged and accounted for
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
@@ -20,6 +21,40 @@ RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 MOCK_DIR = DATA_DIR / "mock"
 MODEL_PATH = BASE_DIR / "models" / "russian-syntagrus-ud-2.5-191206.udpipe"
+
+def preprocess_text(raw_text):
+    """The master text sanitizer: Cleans structural noise and eliminates digital syntax mismatches.
+    Takes a raw_text string as input.
+    """
+    text = str(raw_text)
+    cleaning_rules = [
+        (r'[\xa0\t\n\r]', ' '),              # 1. Flatten hidden line breaks and tabs
+        (r'\.{2,}', '...'),                  # 2. Normalize multiple dots
+        (r'\S+@\S+\.\S+', 'EMAIL'),          # 3. Neutralize emails
+        (r'http[s]?://\S+|www\.\S+', 'URL'), # 4. Neutralize web links
+        (r' +', ' ')                         # 5. Collapse multiple spaces
+    ]
+    # Now we iterate over each text and apply the rules one by one
+    for pattern, replacement in cleaning_rules:
+        text = re.sub(pattern, replacement, text)
+
+    return text.strip()
+
+def normalize_for_match(text):
+    pass
+
+def extract_scrub_tokens(udpipe_result, mystem_result):
+    pass
+
+def _get_mystem_match_indices(ud_norm, clean_ms_tokens,start_idx):
+    pass
+
+def align_tokens(clean_ms_tokens, clean_ud_tokens):
+    pass
+
+def fuse_aligned(alignment_map, ud_lines, ms_json, participant_id):
+    pass
+
 
 def main():
     # Profiler start to check for processing time and memory usage
@@ -61,14 +96,9 @@ def main():
     df = pd.read_csv(active_path, encoding="utf-8")
     logger.info(f"Data loaded from {active_path}")
 
-    # Input regex cleaning
+    # Text preprocessing
     logger.info("Sanitizing the raw input text...")
-    df["raw_text"] = (
-        df["raw_text"]
-        .str.replace(r'[\xa0\t\n\r]', " ", regex=True)
-        .str.replace(r'\.{2,}', "...", regex=True)
-        .str.replace(r' +', ' ', regex=True)
-        .str.strip())
+    df["raw_text"] = df["raw_text"].apply(preprocess_text)
     logger.info("Text sanitization complete!")
 
     # Ufal.udpipe engine initialization
