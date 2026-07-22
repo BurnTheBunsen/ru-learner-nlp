@@ -41,7 +41,11 @@ def preprocess_text(raw_text):
     return text.strip()
 
 def normalize_for_match(text):
-    pass
+    """
+    Normalize a string purely for the two-pointer check.
+    This data is NOT saved to the final csv.
+    """
+    return str(text).replace(",", "").replace(".", "").lower()
 
 def extract_scrub_tokens(udpipe_result, mystem_result):
     pass
