@@ -14,14 +14,18 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Project Data & Corpus
-data/
+data/*
+!data/**/
+!data/**/.gitkeep
 *.csv
 *.tsv
 *.txt
 !requirements.txt
 
 # Models & Binaries
-models/
+models/*
+!models/**/
+!models/**/.gitkeep
 *.udpipe
 *.exe
 
