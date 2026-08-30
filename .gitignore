@@ -35,3 +35,7 @@ Thumbs.db
 
 # Scratch file
 *scratch.py
+
+# Json report files created by the scratchpads
+*_diagnostics_report.json
+*_hyphenation_analysis_report.json
