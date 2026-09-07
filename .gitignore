@@ -15,6 +15,9 @@ __pycache__/
 
 # Project Data & Corpus
 data/*
+!data/README.md
+!data/framebank/
+data/framebank/*.txt
 !data/**/
 !data/**/.gitkeep
 *.csv
@@ -39,3 +42,13 @@ Thumbs.db
 # Json report files created by the scratchpads
 *_diagnostics_report.json
 *_hyphenation_analysis_report.json
+
+# Raw FrameBank dictionary files (large, third-party, GPL-3.0 -- see data/README.md)
+data/framebank/*.txt
+
+# Learner essays and gold-standard annotations -- not for git
+data/raw/
+data/gold_standard/
+
+# Pipeline output -- regenerable, not source
+data/processed/
