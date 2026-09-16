@@ -23,9 +23,9 @@ MULTIWORD_PREP_SENTENCE = [
 ]
 
 
-def test_multiword_preposition_reconstructed_with_framebank_plus_format():
+def test_multiword_preposition_reconstructed_with_plain_space():
     argument = MULTIWORD_PREP_SENTENCE[5]  # "брата"
-    assert reconstruct_preposition(MULTIWORD_PREP_SENTENCE, argument) == "с + помощью"
+    assert reconstruct_preposition(MULTIWORD_PREP_SENTENCE, argument) == "с помощью"
 
 
 def test_extract_verb_arguments_finds_both_the_bare_obj_and_the_prepositional_obl():
@@ -37,7 +37,7 @@ def test_extract_verb_arguments_finds_both_the_bare_obj_and_the_prepositional_ob
 
     by_text = {r["argument_token"]["text"]: r for r in results}
     assert by_text["это"]["preposition"] is None
-    assert by_text["брата"]["preposition"] == "с + помощью"
+    assert by_text["брата"]["preposition"] == "с помощью"
     assert all(r["is_negated"] is False for r in results)
 
 
