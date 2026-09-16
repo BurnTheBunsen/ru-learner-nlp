@@ -14,10 +14,6 @@ def parse_feats(feats_str: str) -> dict:
     return out
 
 
-def _index_by_id(tokens: list[dict]) -> dict:
-    return {t["id"]: t for t in tokens}
-
-
 def _children(tokens: list[dict], parent_id: str, deprel: str | None = None) -> list[dict]:
     return [t for t in tokens if t["head"] == parent_id and (deprel is None or t["deprel"] == deprel)]
 
@@ -50,7 +46,7 @@ def reconstruct_preposition(tokens: list[dict], argument_token: dict) -> str | N
         key=lambda t: int(t["id"]),
     )
     words = [case_token["text"]] + [f["text"] for f in fixed_children]
-    return " + ".join(words)
+    return " ".join(words)
 
 
 def extract_verb_arguments(tokens: list[dict]) -> list[dict]:
@@ -61,7 +57,7 @@ def extract_verb_arguments(tokens: list[dict]) -> list[dict]:
         {
             "verb_token": dict,
             "argument_token": dict,
-            "preposition": str | None,   # FrameBank-format, e.g. "с + помощью"
+            "preposition": str | None,   # FrameBank-format, e.g. "с помощью"
             "is_negated": bool,
         }
 
