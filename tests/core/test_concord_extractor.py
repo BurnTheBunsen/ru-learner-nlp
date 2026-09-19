@@ -140,3 +140,39 @@ def test_invariant_possessive_eyo_would_be_wrongly_accepted_without_the_lemma_gu
     ]
     results = find_concord_pairs(hypothetical)
     assert not any(r["construction"] == "determiner" for r in results)
+
+MISMATCHED_PREDICATE_SHORT_FORM_SENTENCE = [
+    _tok("1", "Она", "PRON", "2", "nsubj", feats="Case=Nom|Gender=Fem|Number=Sing|Person=3"),
+    _tok("2", "умён", "ADJ", "0", "root", feats="Degree=Pos|Gender=Masc|Number=Sing|Variant=Short"),
+    _tok("3", ".", "PUNCT", "2", "punct"),
+]
+
+
+def test_genuinely_mismatched_predicate_adjective_gender_is_preserved_not_masked():
+    results = find_concord_pairs(MISMATCHED_PREDICATE_SHORT_FORM_SENTENCE)
+    pred_pairs = [r for r in results if r["construction"] == "predicate_adjective"]
+    assert len(pred_pairs) == 1
+    assert parse_feats(pred_pairs[0]["controller"]["feats"])["Gender"] == "Fem"
+    assert parse_feats(pred_pairs[0]["dependent"]["feats"])["Gender"] == "Masc"
+
+    PASSIVE_VOICE_MISMATCH_SENTENCE = [
+        _tok("1", "Большая", "ADJ", "2", "amod", feats="Case=Nom|Degree=Pos|Gender=Fem|Number=Sing"),
+        _tok("2", "окно", "NOUN", "3", "nsubj:pass", feats="Animacy=Inan|Case=Nom|Gender=Neut|Number=Sing"),
+        _tok("3", "открыто", "VERB", "0", "root",
+             feats="Aspect=Perf|Gender=Neut|Number=Sing|Tense=Past|Variant=Short|VerbForm=Part|Voice=Pass"),
+        _tok("4", ".", "PUNCT", "3", "punct"),
+    ]
+
+    def test_passive_voice_nsubj_pass_is_found_not_silently_missed():
+        results = find_concord_pairs(PASSIVE_VOICE_MISMATCH_SENTENCE)
+        sv_pairs = [r for r in results if r["construction"] == "subject_verb"]
+        assert len(sv_pairs) == 1
+        assert sv_pairs[0]["controller"]["text"] == "окно"
+        assert sv_pairs[0]["dependent"]["text"] == "открыто"
+
+    def test_passive_voice_sentence_still_also_finds_the_attributive_pair():
+        results = find_concord_pairs(PASSIVE_VOICE_MISMATCH_SENTENCE)
+        attr_pairs = [r for r in results if r["construction"] == "attributive"]
+        assert len(attr_pairs) == 1
+        assert attr_pairs[0]["controller"]["text"] == "окно"
+        assert attr_pairs[0]["dependent"]["text"] == "Большая"

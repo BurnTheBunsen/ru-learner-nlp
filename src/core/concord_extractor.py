@@ -54,7 +54,7 @@ def find_concord_pairs(tokens: list[dict]) -> list[dict]:
         # Shape B: token is the syntactic head, controller is its nsubj
         # dependent (predicate adjectives, both short- and long-form;
         # and ordinary subject-verb agreement)
-        if token["deprel"] == "nsubj":
+        if token["deprel"].split(":")[0] == "nsubj":
             head = _by_id(tokens, token["head"])
             if head and head["upos"] == "ADJ":
                 results.append({"controller": token, "dependent": head, "construction": "predicate_adjective"})
