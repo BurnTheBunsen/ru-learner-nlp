@@ -30,7 +30,10 @@ def test_correct_when_case_matches():
         "analysis": [{"lex": "книга", "wt": 1, "gr": "S,жен,неод=вин,ед"}],
     }]
     result = decide_case_error({"acc"}, target, boundary_tokens, {})
-    assert result == {"status": "correct", "matched_cases": {"acc"}}
+    assert result == {
+        "status": "correct", "matched_cases": {"acc"},
+        "expected": {"acc"}, "found": {"acc"},
+    }
 
 
 def test_correct_via_syncretism_alternative():

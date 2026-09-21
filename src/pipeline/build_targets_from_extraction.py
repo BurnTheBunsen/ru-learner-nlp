@@ -25,5 +25,6 @@ def build_targets_from_extraction(tokens: list[dict], framebank_adapter) -> list
             "target": arg["argument_token"],
             "expected_cases": expected_cases,
             "is_negated": arg["is_negated"],
+            "preposition": arg["preposition"],
         })
     return results
