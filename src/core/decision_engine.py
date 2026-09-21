@@ -45,7 +45,7 @@ def decide_case_error(
 
     matched = accepted_cases & found_cases
     if matched:
-        return {"status": "correct", "matched_cases": matched}
+        return {"status": "correct", "matched_cases": matched, "expected": expected_cases, "found": found_cases}
 
     return {"status": "error", "expected": expected_cases, "found": found_cases}
 

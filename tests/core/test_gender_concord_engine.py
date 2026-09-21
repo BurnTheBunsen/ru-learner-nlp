@@ -60,8 +60,10 @@ def test_correct_when_genders_cleanly_match():
         _boundary("большая", 6, 13, ["A=им,ед,полн,жен"]),
     ]
     result = decide_gender_error(controller, dependent, boundary_tokens, {})
-    assert result == {"status": "correct", "matched_genders": {"fem"}}
-
+    assert result == {
+        "status": "correct", "matched_genders": {"fem"},
+        "expected": {"fem"}, "found": {"fem"},
+    }
 
 def test_error_when_genders_cleanly_mismatch():
     controller = _tok("окно", 0, 4)
@@ -127,3 +129,31 @@ def test_decide_for_concord_pairs_batch_preserves_order_and_attaches_fields():
     assert results[0]["controller"]["text"] == "книга"
     assert results[1]["status"] == "error"
     assert results[1]["dependent"]["text"] == "большая"
+
+def test_present_tense_dependent_with_no_gender_marking_is_no_data_not_error():
+    # Regression test for a real confirmed bug: extraction_runner.py's
+    # first real-bindings run showed "Студент читает книгу." producing
+    # a false "error" for Студент/читает, purely because present-tense
+    # verbs carry no Gender feature at all -- not a genuine mismatch.
+    controller = _tok("студент", 0, 7)
+    dependent = _tok("читает", 8, 14)
+    boundary_tokens = [
+        _boundary("студент", 0, 7, ["S,муж,од=им,ед"]),
+        _boundary("читает", 8, 14, ["V,несов,пе=непрош,ед,изъяв,3-л"]),
+    ]
+    result = decide_gender_error(controller, dependent, boundary_tokens, {})
+    assert result == {"status": "no_data"}
+
+
+def test_genuine_mismatch_still_caught_when_dependent_has_real_but_wrong_gender():
+    # Confirms the no_data fix doesn't weaken real error detection --
+    # a genuine mismatch still has NON-empty dependent_genders.
+    controller = _tok("она", 0, 3)
+    dependent = _tok("умён", 4, 8)
+    boundary_tokens = [
+        _boundary("она", 0, 3, ["SPRO,ед,3-л,жен=им"]),
+        _boundary("умён", 4, 8, ["A=ед,кр,муж"]),
+    ]
+    result = decide_gender_error(controller, dependent, boundary_tokens, {})
+    assert result["status"] == "error"
+    assert result["found"] == {"masc"}

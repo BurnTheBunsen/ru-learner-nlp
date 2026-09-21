@@ -56,11 +56,15 @@ def decide_gender_error(
         if reason:
             return {"status": "excluded", "reason": reason}
 
-    # controller_genders excludes 'common' by this point (excluded
-    # above), so this comparison never falsely matches against it.
+    if not dependent_genders:
+        # Present-tense verbs ("видит", "читает", "лежит") were
+        # being flagged "error" here, not because of a genuine mismatch,
+        # But because this code expected the gender marker output for them.
+        return {"status": "no_data"}
+
     matched = controller_genders & dependent_genders
     if matched:
-        return {"status": "correct", "matched_genders": matched}
+        return {"status": "correct", "matched_genders": matched, "expected": controller_genders, "found": dependent_genders}
 
     return {"status": "error", "expected": controller_genders, "found": dependent_genders}
 
