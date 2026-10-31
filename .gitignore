@@ -36,17 +36,19 @@ models/*
 .DS_Store
 Thumbs.db
 
-# Scratch file
+# Local experiments & diagnostics (track only baseline stress-test files)
+experiments/*
+!experiments/README.md
+!experiments/output_comparison.py
+
+# Root-level scratch files & JSON diagnostic reports
 *scratch.py
+*_report.json
 
-# Json report files created by the scratchpads
-*_diagnostics_report.json
-*_hyphenation_analysis_report.json
-
-# Raw FrameBank dictionary files (large, third-party, GPL-3.0 -- see data/README.md)
+# Raw FrameBank dictionary files (large, third-party, GPL-3.0)
 data/framebank/*.txt
 
-# Learner essays and gold-standard annotations -- not for git
+# Learner essays and gold-standard annotations
 data/raw/
 data/gold_standard/
 
